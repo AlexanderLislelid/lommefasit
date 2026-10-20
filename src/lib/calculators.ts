@@ -44,7 +44,8 @@ export const calculators: Calculator[] = [
   },
   {
     slug: "kilometergodtgjorelse",
-    title: "Kilometergodtgjørelse",
+    // Myk bindestrek, så ordet kan deles når kortet er smalt.
+    title: "Kilometer­godtgjørelse",
     description:
       "Hva får du for å kjøre egen bil i jobben, og hva er skattefritt?",
     icon: "km",
