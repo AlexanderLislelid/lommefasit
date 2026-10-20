@@ -1,0 +1,5 @@
+.next
+node_modules
+design
+package-lock.json
+next-env.d.ts
