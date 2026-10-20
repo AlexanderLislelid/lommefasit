@@ -4,7 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
-import { siteUrl } from "@/lib/site";
+import { pageMetadata, siteDescription, siteName, siteUrl } from "@/lib/site";
 import "./globals.css";
 
 const plexSans = IBM_Plex_Sans({
@@ -18,13 +18,19 @@ const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
 });
 
+const defaultTitle = "Lommefasit – gratis kalkulatorer for hverdagsøkonomi";
+
 export const metadata: Metadata = {
+  ...pageMetadata({
+    title: defaultTitle,
+    description: siteDescription,
+  }),
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Lommefasit - norske kalkulatorer",
-    template: "%s | Lommefasit",
+    default: defaultTitle,
+    template: `%s | ${siteName}`,
   },
-  description: "Enkle og gratis kalkulatorer for hverdagsøkonomi i Norge.",
+  applicationName: siteName,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

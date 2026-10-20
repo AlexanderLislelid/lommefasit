@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
+import { CalculatorJsonLd } from "@/components/JsonLd";
+import { pageMetadata } from "@/lib/site";
 import OvertimeCalculator from "./OvertimeCalculator";
 
-export const metadata: Metadata = {
-  title: "Overtid",
-  description:
-    "Regn ut hva du får for overtidstimer med 50 % eller 100 % tillegg, fra timelønn, månedslønn eller årslønn.",
-};
+const title = "Overtidskalkulator – regn ut overtidsbetaling";
+const description =
+  "Regn ut hva du får for overtidstimer med 50 % eller 100 % tillegg, fra timelønn, månedslønn eller årslønn.";
+const path = "/overtid";
+
+export const metadata: Metadata = pageMetadata({ title, description, path });
 
 export default function OvertimePage() {
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-16">
+      <CalculatorJsonLd name={title} description={description} path={path} />
       <h1 className="font-display text-4xl font-semibold tracking-tight text-gray-900">
         Overtid
       </h1>

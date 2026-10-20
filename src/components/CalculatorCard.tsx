@@ -24,9 +24,9 @@ export default function CalculatorCard({ calc }: { calc: Calculator }) {
           </span>
         )}
       </div>
-      <h3 className="font-display text-xl font-semibold tracking-tight text-gray-900">
+      <h2 className="font-display text-xl font-semibold tracking-tight text-gray-900">
         {calc.title}
-      </h3>
+      </h2>
       <p className="mt-2 text-sm leading-relaxed text-gray-600">
         {calc.description}
       </p>

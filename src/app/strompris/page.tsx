@@ -6,9 +6,11 @@ import {
   TrendingUp,
   Zap,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
+import { CalculatorJsonLd } from "@/components/JsonLd";
 import {
   fetchElectricityPrices,
   isZone,
@@ -17,6 +19,15 @@ import {
   type Zone,
 } from "@/lib/electricityPrice";
 import { formatDecimal, formatOre } from "@/lib/format";
+import { pageMetadata } from "@/lib/site";
+
+const title = "Strømpris i dag – timepris per prisområde";
+const description =
+  "Se dagens strømpris time for time i NO1–NO5, inkludert mva., med billigste og dyreste time og pris etter strømstøtte.";
+const path = "/strompris";
+
+// Kanonisk URL uten ?sone= og ?visning=, så variantene ikke konkurrerer i søk.
+export const metadata: Metadata = pageMetadata({ title, description, path });
 
 type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -25,6 +36,7 @@ type Props = {
 export default function ElectricityPricePage({ searchParams }: Props) {
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-16">
+      <CalculatorJsonLd name={title} description={description} path={path} />
       <h1 className="font-display text-4xl font-semibold tracking-tight text-gray-900">
         Strømpris i dag
       </h1>
