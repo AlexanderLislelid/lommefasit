@@ -13,6 +13,7 @@ export default function CalculatorCard({ calc }: { calc: Calculator }) {
     >
       <div className="mb-5 flex items-start justify-between">
         <span
+          aria-hidden
           className={`font-display inline-flex size-12 items-center justify-center rounded-xl text-lg font-bold shadow-sm ring-1 ring-inset ${color.icon}`}
         >
           {calc.icon}
