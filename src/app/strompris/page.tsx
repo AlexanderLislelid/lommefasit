@@ -423,9 +423,24 @@ function PriceTable({ prices }: { prices: HourlyPrice[] }) {
   );
 }
 
+// Samme stil som app/loading.tsx, formet som prisområder, nøkkeltall og graf.
 function Loading() {
   return (
-    <div className="mt-8 h-96 animate-pulse rounded-2xl border border-gray-200 bg-white" />
+    <div role="status" className="animate-pulse">
+      <span className="sr-only">Henter strømpriser …</span>
+      <div className="mt-8 flex flex-wrap gap-2">
+        {Object.keys(zones).map((zone) => (
+          <div key={zone} className="h-9 w-24 rounded-full bg-gray-200" />
+        ))}
+      </div>
+      <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="col-span-2 h-36 rounded-2xl bg-gray-200 lg:col-span-1" />
+        <div className="h-36 rounded-2xl bg-gray-200" />
+        <div className="h-36 rounded-2xl bg-gray-200" />
+        <div className="h-36 rounded-2xl bg-gray-200" />
+      </div>
+      <div className="mt-8 h-80 rounded-2xl bg-gray-200" />
+    </div>
   );
 }
 
