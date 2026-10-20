@@ -3,7 +3,7 @@ export type Calculator = {
   title: string;
   description: string;
   icon: string;
-  color: "green" | "blue" | "orange" | "purple";
+  color: "green" | "blue" | "orange" | "purple" | "teal";
   status: "live" | "ready" | "soon";
   cta?: string;
 };
