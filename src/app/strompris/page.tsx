@@ -1,3 +1,11 @@
+import {
+  ArrowDown,
+  ArrowUp,
+  Equal,
+  TrendingDown,
+  TrendingUp,
+  Zap,
+} from "lucide-react";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
@@ -8,7 +16,7 @@ import {
   type HourlyPrice,
   type Zone,
 } from "@/lib/electricityPrice";
-import { formatOre } from "@/lib/format";
+import { formatDecimal, formatOre } from "@/lib/format";
 
 type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -102,12 +110,12 @@ function ViewToggle({
 }) {
   const button = "rounded-full px-4 py-1.5 text-sm font-medium transition";
   const active = "bg-white text-gray-900 shadow-sm";
-  const inactive = "text-gray-600 hover:text-gray-900";
+  const inactive = "text-gray-700 hover:text-gray-900";
 
   return (
     <nav
       aria-label="Visning"
-      className="inline-flex self-start rounded-full bg-gray-100 p-1"
+      className="inline-flex self-start rounded-full bg-gray-200 p-1 ring-1 ring-gray-300 ring-inset"
     >
       <Link
         href={`?sone=${zone}`}
@@ -162,47 +170,86 @@ function KeyFigures({
   currentHour: number;
 }) {
   const values = prices.map((p) => p.orePerKwh);
+  const average = values.reduce((a, b) => a + b, 0) / values.length;
   const lowest = prices.reduce((a, b) => (b.orePerKwh < a.orePerKwh ? b : a));
   const highest = prices.reduce((a, b) => (b.orePerKwh > a.orePerKwh ? b : a));
-  const currentPrice = prices.find((p) => p.hour === currentHour);
+  const current = prices.find((p) => p.hour === currentHour);
+  const diff = current ? (current.orePerKwh - average) / average : 0;
 
   const stats = [
-    {
-      label: "Nå",
-      value: currentPrice?.orePerKwh,
-      hint: `kl. ${formatHour(currentHour)}`,
-    },
-    {
-      label: "Snitt i dag",
-      value: values.reduce((a, b) => a + b, 0) / values.length,
-    },
+    { label: "Snitt i dag", value: average, hint: "Alle timer", icon: Equal },
     {
       label: "Lavest",
       value: lowest.orePerKwh,
-      hint: `kl. ${formatHour(lowest.hour)}`,
+      hint: `kl. ${hourRange(lowest.hour)}`,
+      icon: ArrowDown,
     },
     {
       label: "Høyest",
       value: highest.orePerKwh,
-      hint: `kl. ${formatHour(highest.hour)}`,
+      hint: `kl. ${hourRange(highest.hour)}`,
+      icon: ArrowUp,
     },
   ];
 
   return (
     <dl className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
-      {stats.map((s) => (
-        <div
-          key={s.label}
-          className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
-        >
-          <dt className="text-sm text-gray-600">{s.label}</dt>
-          <dd className="font-display mt-1 text-2xl font-semibold text-gray-900">
-            {s.value === undefined ? "–" : formatOre(s.value)}
+      <div className="col-span-2 flex flex-col rounded-2xl border border-purple-200 bg-linear-to-br from-purple-100 via-purple-50 to-white p-5 text-gray-900 shadow-sm lg:col-span-1">
+        <dt className="flex items-center justify-between text-sm font-medium text-purple-900">
+          Nå, kl. {hourRange(currentHour)}
+          <span className="inline-flex size-8 items-center justify-center rounded-lg bg-white text-purple-700 ring-1 ring-purple-200 ring-inset">
+            <Zap aria-hidden className="size-4" />
+          </span>
+        </dt>
+        <dd className="mt-3">
+          <Amount value={current?.orePerKwh} />
+        </dd>
+        {current && Math.abs(diff) >= 0.005 && (
+          <dd className="mt-auto pt-3">
+            <span className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-purple-800 ring-1 ring-purple-200 ring-inset">
+              {diff < 0 ? (
+                <TrendingDown aria-hidden className="size-3.5" />
+              ) : (
+                <TrendingUp aria-hidden className="size-3.5" />
+              )}
+              {Math.round(Math.abs(diff) * 100)} % {diff < 0 ? "under" : "over"}{" "}
+              snittet
+            </span>
           </dd>
-          {s.hint && <dd className="text-xs text-gray-500">{s.hint}</dd>}
+        )}
+      </div>
+      {stats.map(({ label, value, hint, icon: Icon }) => (
+        <div
+          key={label}
+          className="flex flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
+        >
+          <dt className="flex items-center justify-between text-sm text-gray-600">
+            {label}
+            <span className="inline-flex size-8 items-center justify-center rounded-lg bg-purple-50 text-purple-700 ring-1 ring-purple-100 ring-inset">
+              <Icon aria-hidden className="size-4" />
+            </span>
+          </dt>
+          <dd className="mt-3 text-gray-900">
+            <Amount value={value} />
+          </dd>
+          <dd className="mt-auto pt-3 text-xs text-gray-500">{hint}</dd>
         </div>
       ))}
     </dl>
+  );
+}
+
+function Amount({ value }: { value?: number }) {
+  if (value === undefined) {
+    return <span className="font-display text-3xl font-semibold">–</span>;
+  }
+  return (
+    <>
+      <span className="font-display text-3xl font-semibold tracking-tight tabular-nums">
+        {formatDecimal(value)}
+      </span>{" "}
+      <span className="text-sm text-gray-500">øre/kWh</span>
+    </>
   );
 }
 
@@ -294,4 +341,8 @@ function Loading() {
 
 function formatHour(hour: number): string {
   return String(hour).padStart(2, "0");
+}
+
+function hourRange(hour: number): string {
+  return `${formatHour(hour)}–${formatHour((hour + 1) % 24)}`;
 }
