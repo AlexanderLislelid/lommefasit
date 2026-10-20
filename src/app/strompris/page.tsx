@@ -29,8 +29,8 @@ export default function ElectricityPricePage({ searchParams }: Props) {
         Strømpris i dag
       </h1>
       <p className="mt-2 text-gray-600">
-        Spotpris per time fra Nord Pool, inkludert mva. Nettleie og påslag fra
-        strømselskapet kommer i tillegg.
+        Spotpris per time fra døgnmarkedet, inkludert mva. (NO4 er fritatt).
+        Nettleie, avgifter og påslag fra strømselskapet kommer i tillegg.
       </p>
       <Suspense fallback={<Loading />}>
         <Prices searchParams={searchParams} />
