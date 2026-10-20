@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import {
   fetchElectricityPrices,
@@ -26,14 +27,27 @@ export default function ElectricityPricePage({ searchParams }: Props) {
       <Suspense fallback={<Loading />}>
         <Prices searchParams={searchParams} />
       </Suspense>
+      <p className="mt-8 text-sm text-gray-500">
+        Strømpriser fra{" "}
+        <a
+          href="https://www.hvakosterstrommen.no"
+          className="font-medium text-gray-700 underline underline-offset-2 hover:text-gray-900"
+        >
+          hvakosterstrommen.no
+        </a>
+        .
+      </p>
     </main>
   );
 }
 
 async function Prices({ searchParams }: Props) {
-  const { sone: param } = await searchParams;
+  const { sone: param, visning } = await searchParams;
   const zone: Zone = isZone(param) ? param : "NO1";
+  const withSupport = visning === "stotte";
 
+  // Klokkeslettet skal gjelde for hver forespørsel, ikke fryses i en forhåndsrendring.
+  await connection();
   const now = new Date();
   const date = now.toLocaleDateString("sv-SE", { timeZone: "Europe/Oslo" });
   const currentHour = Number(
@@ -44,11 +58,26 @@ async function Prices({ searchParams }: Props) {
     }),
   );
 
-  const prices = await fetchElectricityPrices(date, zone);
+  const fetched = await fetchElectricityPrices(date, zone);
+  // Resten av siden bruker orePerKwh, så vi bytter inn prisen etter støtte når den er valgt.
+  const prices = withSupport
+    ? fetched.map((p) => ({ ...p, orePerKwh: p.orePerKwhAfterSupport }))
+    : fetched;
 
   return (
     <>
-      <ZonePicker selected={zone} />
+      <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <ZonePicker selected={zone} withSupport={withSupport} />
+        <ViewToggle zone={zone} withSupport={withSupport} />
+      </div>
+      {withSupport && (
+        <p className="mt-4 text-sm text-gray-600">
+          Staten dekker 90 % av spotprisen over 77 øre/kWh eks. mva. (96,25 øre
+          med mva.). Støtten trekkes fra på nettleiefakturaen. Har du
+          Norgespris, betaler du i stedet fast 50 øre/kWh med mva. (40 øre i
+          Nord-Norge).
+        </p>
+      )}
       {prices.length === 0 ? (
         <p className="mt-8 rounded-2xl border border-gray-200 bg-white p-6 text-gray-600">
           Fant ingen priser for i dag. Prøv igjen litt senere.
@@ -64,13 +93,53 @@ async function Prices({ searchParams }: Props) {
   );
 }
 
-function ZonePicker({ selected }: { selected: Zone }) {
+function ViewToggle({
+  zone,
+  withSupport,
+}: {
+  zone: Zone;
+  withSupport: boolean;
+}) {
+  const button = "rounded-full px-4 py-1.5 text-sm font-medium transition";
+  const active = "bg-white text-gray-900 shadow-sm";
+  const inactive = "text-gray-600 hover:text-gray-900";
+
   return (
-    <nav aria-label="Prisområde" className="mt-8 flex flex-wrap gap-2">
+    <nav
+      aria-label="Visning"
+      className="inline-flex self-start rounded-full bg-gray-100 p-1"
+    >
+      <Link
+        href={`?sone=${zone}`}
+        aria-current={!withSupport ? "page" : undefined}
+        className={`${button} ${!withSupport ? active : inactive}`}
+      >
+        Spotpris
+      </Link>
+      <Link
+        href={`?sone=${zone}&visning=stotte`}
+        aria-current={withSupport ? "page" : undefined}
+        className={`${button} ${withSupport ? active : inactive}`}
+      >
+        Etter strømstøtte
+      </Link>
+    </nav>
+  );
+}
+
+function ZonePicker({
+  selected,
+  withSupport,
+}: {
+  selected: Zone;
+  withSupport: boolean;
+}) {
+  return (
+    <nav aria-label="Prisområde" className="flex flex-wrap gap-2">
       {(Object.keys(zones) as Zone[]).map((zone) => (
         <Link
           key={zone}
-          href={`?sone=${zone}`}
+          href={`?sone=${zone}${withSupport ? "&visning=stotte" : ""}`}
           aria-current={zone === selected ? "page" : undefined}
           className={`rounded-full border px-4 py-1.5 text-sm font-medium transition ${
             zone === selected

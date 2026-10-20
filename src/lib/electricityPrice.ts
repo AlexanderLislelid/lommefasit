@@ -16,11 +16,26 @@ export function isZone(value: unknown): value is Zone {
 
 type ApiPrice = { NOK_per_kWh: number; time_start: string; time_end: string };
 
-export type HourlyPrice = { hour: number; orePerKwh: number };
+export type HourlyPrice = {
+  hour: number;
+  orePerKwh: number;
+  orePerKwhAfterSupport: number;
+};
+
+// Strømstøtte for husholdninger i 2026: staten dekker 90 % av spotprisen over 77 øre/kWh
+// eks. mva., time for time. Forskrift om strømstønad (FOR-2025-09-08-1791).
+const SUPPORT_THRESHOLD_ORE = 77;
+const SUPPORT_RATE = 0.9;
 
 // NO4 er fritatt for mva.
 function vatMultiplier(zone: Zone): number {
   return zone === "NO4" ? 1 : 1.25;
+}
+
+function afterSupport(orePerKwhExVat: number): number {
+  const support =
+    Math.max(orePerKwhExVat - SUPPORT_THRESHOLD_ORE, 0) * SUPPORT_RATE;
+  return orePerKwhExVat - support;
 }
 
 // Prisene kan komme i 15-minuttersintervaller, så vi slår dem sammen til snitt per time.
@@ -45,11 +60,12 @@ export async function fetchElectricityPrices(
     byHour.set(hour, [...(byHour.get(hour) ?? []), p.NOK_per_kWh]);
   }
 
-  return [...byHour].map(([hour, prices]) => ({
-    hour,
-    orePerKwh:
-      (prices.reduce((a, b) => a + b, 0) / prices.length) *
-      100 *
-      vatMultiplier(zone),
-  }));
+  return [...byHour].map(([hour, prices]) => {
+    const exVat = (prices.reduce((a, b) => a + b, 0) / prices.length) * 100;
+    return {
+      hour,
+      orePerKwh: exVat * vatMultiplier(zone),
+      orePerKwhAfterSupport: afterSupport(exVat) * vatMultiplier(zone),
+    };
+  });
 }
