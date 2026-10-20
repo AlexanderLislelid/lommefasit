@@ -4,6 +4,15 @@ const nok = new Intl.NumberFormat("nb-NO", {
   maximumFractionDigits: 0,
 });
 
-export function formatKroner(amount: number): string {
+export function formatNok(amount: number): string {
   return nok.format(amount);
+}
+
+const ore = new Intl.NumberFormat("nb-NO", {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+});
+
+export function formatOre(amount: number): string {
+  return `${ore.format(amount)} øre`;
 }

@@ -1,4 +1,4 @@
-export default function FeriePenger() {
+export default function HolidayPayPage() {
   return (
     <div>
       <h1>Feriepenger</h1>
