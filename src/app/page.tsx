@@ -1,7 +1,16 @@
+import CalculatorCard from "@/components/CalculatorCard";
+import { calculators } from "@/lib/calculators";
+
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center font-sans ">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white "></main>
-    </div>
+    <main className="mx-auto w-full max-w-5xl px-4 py-16">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {calculators
+          .filter((calc) => calc.status !== "soon")
+          .map((calc) => (
+            <CalculatorCard key={calc.slug} calc={calc} />
+          ))}
+      </div>
+    </main>
   );
 }
