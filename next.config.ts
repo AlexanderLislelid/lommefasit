@@ -4,6 +4,10 @@ const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
+  experimental: {
+    // Språkene har hver sin root layout, så 404 trenger en egen global side.
+    globalNotFound: true,
+  },
   headers() {
     return [
       {

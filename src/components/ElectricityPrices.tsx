@@ -6,12 +6,9 @@ import {
   TrendingUp,
   Zap,
 } from "lucide-react";
-import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import Faq, { type FaqItem } from "@/components/Faq";
-import { CalculatorJsonLd } from "@/components/JsonLd";
 import {
   fetchElectricityPrices,
   isZone,
@@ -20,125 +17,83 @@ import {
   type Zone,
 } from "@/lib/electricityPrice";
 import { formatDecimal, formatOre } from "@/lib/format";
-import { pageMetadata } from "@/lib/site";
+import type { Lang } from "@/lib/i18n";
 
-const title = "Strømpris i dag – timepris per prisområde";
-const description =
-  "Se dagens strømpris time for time i NO1–NO5, inkludert mva., med billigste og dyreste time og pris etter strømstøtte.";
-const path = "/strompris";
+const copy = {
+  nb: {
+    zones,
+    view: "Visning",
+    spot: "Spotpris",
+    afterSupport: "Etter strømstøtte",
+    zone: "Prisområde",
+    supportNote:
+      "Staten dekker 90 % av spotprisen over 77 øre/kWh eks. mva. (96,25 øre med mva.). Støtten trekkes fra på nettleiefakturaen. Har du Norgespris, betaler du i stedet fast 50 øre/kWh med mva. (40 øre i Nord-Norge).",
+    noPrices: "Fant ingen priser for i dag. Prøv igjen litt senere.",
+    now: "Nå, kl.",
+    average: "Snitt i dag",
+    allHours: "Alle timer",
+    lowest: "Lavest",
+    highest: "Høyest",
+    at: "kl.",
+    diff: (percent: number, below: boolean) =>
+      `${percent} % ${below ? "under" : "over"} snittet`,
+    chart: "Pris per time (øre/kWh)",
+    table: "Vis som tabell",
+    hour: "Time",
+    pricePerKwh: "Pris per kWh",
+    loading: "Henter strømpriser …",
+  },
+  en: {
+    zones: {
+      NO1: "East",
+      NO2: "South",
+      NO3: "Central",
+      NO4: "North",
+      NO5: "West",
+    },
+    view: "View",
+    spot: "Spot price",
+    afterSupport: "After electricity support",
+    zone: "Price zone",
+    supportNote:
+      "The state covers 90% of the spot price above 77 øre/kWh excl. VAT (96.25 øre incl. VAT). The support is deducted on your grid rent invoice. If you have Norgespris, you instead pay a fixed 50 øre/kWh incl. VAT (40 øre in Northern Norway).",
+    noPrices: "No prices found for today. Please try again a little later.",
+    now: "Now,",
+    average: "Today's average",
+    allHours: "All hours",
+    lowest: "Lowest",
+    highest: "Highest",
+    at: "",
+    diff: (percent: number, below: boolean) =>
+      `${percent}% ${below ? "below" : "above"} average`,
+    chart: "Price per hour (øre/kWh)",
+    table: "Show as table",
+    hour: "Hour",
+    pricePerKwh: "Price per kWh",
+    loading: "Loading electricity prices …",
+  },
+} satisfies Record<
+  Lang,
+  { zones: Record<Zone, string>; [key: string]: unknown }
+>;
 
-// Kanonisk URL uten ?sone= og ?visning=, så variantene ikke konkurrerer i søk.
-export const metadata: Metadata = pageMetadata({ title, description, path });
-
-const faq: FaqItem[] = [
-  {
-    question: "Hva er spotpris?",
-    answer:
-      "Spotprisen er markedsprisen på strøm fra kraftbørsen Nord Pool. Den settes for hvert prisområde dagen før, og prisene for neste døgn blir vanligvis publisert rundt klokken 13. Har du spotprisavtale, betaler du denne prisen pluss et påslag til strømselskapet.",
-  },
-  {
-    question: "Hva betaler jeg i tillegg til spotprisen?",
-    answer:
-      "Du betaler nettleie til nettselskapet, som også inneholder forbruksavgift og andre avgifter. I tillegg kommer påslag per kWh og et fast månedsbeløp fra strømselskapet. Spotprisen er derfor bare en del av det strømmen koster deg.",
-  },
-  {
-    question: "Hvordan fungerer strømstøtten?",
-    answer:
-      "Staten dekker 90 % av spotprisen over 77 øre per kWh eks. mva., som er 96,25 øre med mva. Støtten regnes ut time for time for inntil 5 000 kWh i måneden, og trekkes automatisk fra nettleiefakturaen. Du trenger ikke søke.",
-  },
-  {
-    question: "Hva er Norgespris?",
-    answer:
-      "Norgespris er en frivillig fastpris på 40 øre per kWh eks. mva., altså 50 øre med mva. I Nord-Norge, der det ikke er mva. på strøm, er prisen 40 øre. Du velger Norgespris hos nettselskapet ditt. Har du Norgespris, får du ikke strømstøtte i tillegg.",
-  },
-  {
-    question: "Når er strømmen billigst?",
-    answer:
-      "Strømmen er ofte billigst om natten og midt på dagen, og dyrest om morgenen og tidlig på kvelden når mange bruker strøm samtidig. Det varierer fra dag til dag, så sjekk timeprisene før du lader bilen eller kjører vaskemaskinen.",
-  },
-  {
-    question: "Hvilket prisområde bor jeg i?",
-    answer:
-      "Norge er delt i fem prisområder: NO1 Øst (Oslo), NO2 Sør (Kristiansand og Stavanger), NO3 Midt (Trondheim), NO4 Nord (Tromsø) og NO5 Vest (Bergen). Nettselskapet ditt eller strømregningen viser hvilket område du hører til.",
-  },
-  {
-    question: "Hvorfor er strømprisen forskjellig i Nord- og Sør-Norge?",
-    answer:
-      "Det er begrenset hvor mye strøm som kan overføres mellom landsdelene. Sør-Norge har mer kontakt med kraftmarkedet i Europa og får oftere høyere priser, mens Nord-Norge ofte har overskudd av kraft og lavere priser.",
-  },
-];
+type Copy = (typeof copy)[Lang];
 
 type Props = {
+  lang: Lang;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-export default function ElectricityPricePage({ searchParams }: Props) {
+export default function ElectricityPrices({ lang, searchParams }: Props) {
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-16">
-      <CalculatorJsonLd name={title} description={description} path={path} />
-      <h1 className="font-display text-4xl font-semibold tracking-tight text-gray-900">
-        Strømpris i dag
-      </h1>
-      <p className="mt-2 text-gray-600">
-        Spotpris per time fra døgnmarkedet, inkludert mva. (NO4 er fritatt).
-        Nettleie, avgifter og påslag fra strømselskapet kommer i tillegg.
-      </p>
-      <Suspense fallback={<Loading />}>
-        <Prices searchParams={searchParams} />
-      </Suspense>
-      <p className="mt-8 text-sm text-gray-500">
-        Strømpriser fra{" "}
-        <a
-          href="https://www.hvakosterstrommen.no"
-          className="font-medium text-gray-700 underline underline-offset-2 hover:text-gray-900"
-        >
-          hvakosterstrommen.no
-        </a>
-        .
-      </p>
-
-      <section className="mt-16 max-w-3xl">
-        <h2 className="font-display text-2xl font-semibold tracking-tight text-gray-900">
-          Hva betaler du egentlig for strømmen?
-        </h2>
-        <p className="mt-4 leading-relaxed text-gray-600">
-          Strømregningen består av tre deler:
-        </p>
-        <ul className="mt-4 list-disc space-y-2 pl-5 leading-relaxed text-gray-600">
-          <li>
-            <span className="font-medium text-gray-900">Spotprisen</span>, som
-            vises på denne siden og endrer seg hver time.
-          </li>
-          <li>
-            <span className="font-medium text-gray-900">
-              Påslag og fastbeløp
-            </span>{" "}
-            fra strømselskapet, som avhenger av avtalen din.
-          </li>
-          <li>
-            <span className="font-medium text-gray-900">Nettleie</span> til
-            nettselskapet, med forbruksavgift og andre avgifter. Her trekkes
-            også strømstøtten fra.
-          </li>
-        </ul>
-        <p className="mt-4 leading-relaxed text-gray-600">
-          Les mer om strømstøtte og Norgespris hos{" "}
-          <a
-            href="https://www.regjeringen.no/no/tema/energi/strom/regjeringens-stromtiltak/id2900232/"
-            className="font-medium text-gray-700 underline underline-offset-2 hover:text-gray-900"
-          >
-            regjeringen.no
-          </a>
-          .
-        </p>
-      </section>
-
-      <Faq items={faq} />
-    </main>
+    <Suspense fallback={<Loading t={copy[lang]} />}>
+      <Prices lang={lang} searchParams={searchParams} />
+    </Suspense>
   );
 }
 
-async function Prices({ searchParams }: Props) {
+async function Prices({ lang, searchParams }: Props) {
+  const t = copy[lang];
   const { sone: param, visning } = await searchParams;
   const zone: Zone = isZone(param) ? param : "NO1";
   const withSupport = visning === "stotte";
@@ -164,26 +119,31 @@ async function Prices({ searchParams }: Props) {
   return (
     <>
       <div className="mt-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <ZonePicker selected={zone} withSupport={withSupport} />
-        <ViewToggle zone={zone} withSupport={withSupport} />
+        <ZonePicker t={t} selected={zone} withSupport={withSupport} />
+        <ViewToggle t={t} zone={zone} withSupport={withSupport} />
       </div>
       {withSupport && (
-        <p className="mt-4 text-sm text-gray-600">
-          Staten dekker 90 % av spotprisen over 77 øre/kWh eks. mva. (96,25 øre
-          med mva.). Støtten trekkes fra på nettleiefakturaen. Har du
-          Norgespris, betaler du i stedet fast 50 øre/kWh med mva. (40 øre i
-          Nord-Norge).
-        </p>
+        <p className="mt-4 text-sm text-gray-600">{t.supportNote}</p>
       )}
       {prices.length === 0 ? (
         <p className="mt-8 rounded-2xl border border-gray-200 bg-white p-6 text-gray-600">
-          Fant ingen priser for i dag. Prøv igjen litt senere.
+          {t.noPrices}
         </p>
       ) : (
         <>
-          <KeyFigures prices={prices} currentHour={currentHour} />
-          <PriceChart prices={prices} currentHour={currentHour} />
-          <PriceTable prices={prices} />
+          <KeyFigures
+            t={t}
+            lang={lang}
+            prices={prices}
+            currentHour={currentHour}
+          />
+          <PriceChart
+            t={t}
+            lang={lang}
+            prices={prices}
+            currentHour={currentHour}
+          />
+          <PriceTable t={t} lang={lang} prices={prices} />
         </>
       )}
     </>
@@ -191,9 +151,11 @@ async function Prices({ searchParams }: Props) {
 }
 
 function ViewToggle({
+  t,
   zone,
   withSupport,
 }: {
+  t: Copy;
   zone: Zone;
   withSupport: boolean;
 }) {
@@ -204,7 +166,7 @@ function ViewToggle({
 
   return (
     <nav
-      aria-label="Visning"
+      aria-label={t.view}
       className="inline-flex shrink-0 self-start rounded-full bg-gray-200 p-1 ring-1 ring-gray-300 ring-inset"
     >
       <Link
@@ -212,28 +174,30 @@ function ViewToggle({
         aria-current={!withSupport ? "page" : undefined}
         className={`${button} ${!withSupport ? active : inactive}`}
       >
-        Spotpris
+        {t.spot}
       </Link>
       <Link
         href={`?sone=${zone}&visning=stotte`}
         aria-current={withSupport ? "page" : undefined}
         className={`${button} ${withSupport ? active : inactive}`}
       >
-        Etter strømstøtte
+        {t.afterSupport}
       </Link>
     </nav>
   );
 }
 
 function ZonePicker({
+  t,
   selected,
   withSupport,
 }: {
+  t: Copy;
   selected: Zone;
   withSupport: boolean;
 }) {
   return (
-    <nav aria-label="Prisområde" className="flex flex-wrap gap-2">
+    <nav aria-label={t.zone} className="flex flex-wrap gap-2">
       {(Object.keys(zones) as Zone[]).map((zone) => (
         <Link
           key={zone}
@@ -245,7 +209,7 @@ function ZonePicker({
               : "border-gray-200 bg-white text-gray-700 hover:border-purple-200"
           }`}
         >
-          {zone} {zones[zone]}
+          {zone} {t.zones[zone]}
         </Link>
       ))}
     </nav>
@@ -253,9 +217,13 @@ function ZonePicker({
 }
 
 function KeyFigures({
+  t,
+  lang,
   prices,
   currentHour,
 }: {
+  t: Copy;
+  lang: Lang;
   prices: HourlyPrice[];
   currentHour: number;
 }) {
@@ -265,19 +233,21 @@ function KeyFigures({
   const highest = prices.reduce((a, b) => (b.orePerKwh > a.orePerKwh ? b : a));
   const current = prices.find((p) => p.hour === currentHour);
   const diff = current ? (current.orePerKwh - average) / average : 0;
+  const at = (hour: number) =>
+    t.at ? `${t.at} ${hourRange(hour)}` : hourRange(hour);
 
   const stats = [
-    { label: "Snitt i dag", value: average, hint: "Alle timer", icon: Equal },
+    { label: t.average, value: average, hint: t.allHours, icon: Equal },
     {
-      label: "Lavest",
+      label: t.lowest,
       value: lowest.orePerKwh,
-      hint: `kl. ${hourRange(lowest.hour)}`,
+      hint: at(lowest.hour),
       icon: ArrowDown,
     },
     {
-      label: "Høyest",
+      label: t.highest,
       value: highest.orePerKwh,
-      hint: `kl. ${hourRange(highest.hour)}`,
+      hint: at(highest.hour),
       icon: ArrowUp,
     },
   ];
@@ -286,13 +256,13 @@ function KeyFigures({
     <dl className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
       <div className="col-span-2 flex flex-col rounded-2xl border border-purple-200 bg-linear-to-br from-purple-100 via-purple-50 to-white p-5 text-gray-900 shadow-sm lg:col-span-1">
         <dt className="flex items-center justify-between text-sm font-medium text-purple-900">
-          Nå, kl. {hourRange(currentHour)}
+          {t.now} {hourRange(currentHour)}
           <span className="inline-flex size-8 items-center justify-center rounded-lg bg-white text-purple-700 ring-1 ring-purple-200 ring-inset">
             <Zap aria-hidden className="size-4" />
           </span>
         </dt>
         <dd className="mt-3">
-          <Amount value={current?.orePerKwh} />
+          <Amount lang={lang} value={current?.orePerKwh} />
         </dd>
         {current && Math.abs(diff) >= 0.005 && (
           <dd className="mt-auto pt-3">
@@ -302,8 +272,7 @@ function KeyFigures({
               ) : (
                 <TrendingUp aria-hidden className="size-3.5" />
               )}
-              {Math.round(Math.abs(diff) * 100)} % {diff < 0 ? "under" : "over"}{" "}
-              snittet
+              {t.diff(Math.round(Math.abs(diff) * 100), diff < 0)}
             </span>
           </dd>
         )}
@@ -320,7 +289,7 @@ function KeyFigures({
             </span>
           </dt>
           <dd className="mt-3 text-gray-900">
-            <Amount value={value} />
+            <Amount lang={lang} value={value} />
           </dd>
           <dd className="mt-auto pt-3 text-xs text-gray-500">{hint}</dd>
         </div>
@@ -329,14 +298,14 @@ function KeyFigures({
   );
 }
 
-function Amount({ value }: { value?: number }) {
+function Amount({ lang, value }: { lang: Lang; value?: number }) {
   if (value === undefined) {
     return <span className="font-display text-3xl font-semibold">–</span>;
   }
   return (
     <>
       <span className="font-display text-3xl font-semibold tracking-tight tabular-nums">
-        {formatDecimal(value)}
+        {formatDecimal(value, lang)}
       </span>{" "}
       <span className="text-sm text-gray-500">øre/kWh</span>
     </>
@@ -344,9 +313,13 @@ function Amount({ value }: { value?: number }) {
 }
 
 function PriceChart({
+  t,
+  lang,
   prices,
   currentHour,
 }: {
+  t: Copy;
+  lang: Lang;
   prices: HourlyPrice[];
   currentHour: number;
 }) {
@@ -355,7 +328,7 @@ function PriceChart({
   return (
     <figure className="mt-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
       <figcaption className="text-sm font-medium text-gray-900">
-        Pris per time (øre/kWh)
+        {t.chart}
       </figcaption>
       <div className="mt-6 flex h-56 items-end gap-0.5">
         {prices.map((p) => (
@@ -374,10 +347,10 @@ function PriceChart({
               }}
             />
             <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 hidden -translate-x-1/2 rounded-lg bg-gray-900 px-2.5 py-1.5 text-xs whitespace-nowrap text-white shadow-lg group-hover:block">
-              <span className="text-gray-300">
-                {formatHour(p.hour)}–{formatHour((p.hour + 1) % 24)}
-              </span>{" "}
-              <span className="font-semibold">{formatOre(p.orePerKwh)}</span>
+              <span className="text-gray-300">{hourRange(p.hour)}</span>{" "}
+              <span className="font-semibold">
+                {formatOre(p.orePerKwh, lang)}
+              </span>
             </div>
           </div>
         ))}
@@ -393,27 +366,33 @@ function PriceChart({
   );
 }
 
-function PriceTable({ prices }: { prices: HourlyPrice[] }) {
+function PriceTable({
+  t,
+  lang,
+  prices,
+}: {
+  t: Copy;
+  lang: Lang;
+  prices: HourlyPrice[];
+}) {
   return (
     <details className="mt-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
       <summary className="cursor-pointer text-sm font-medium text-gray-900">
-        Vis som tabell
+        {t.table}
       </summary>
       <table className="mt-4 w-full text-sm">
         <thead>
           <tr className="border-b border-gray-200 text-left text-gray-600">
-            <th className="py-2 font-medium">Time</th>
-            <th className="py-2 text-right font-medium">Pris per kWh</th>
+            <th className="py-2 font-medium">{t.hour}</th>
+            <th className="py-2 text-right font-medium">{t.pricePerKwh}</th>
           </tr>
         </thead>
         <tbody>
           {prices.map((p) => (
             <tr key={p.hour} className="border-b border-gray-100 last:border-0">
-              <td className="py-1.5 text-gray-700">
-                {formatHour(p.hour)}–{formatHour((p.hour + 1) % 24)}
-              </td>
+              <td className="py-1.5 text-gray-700">{hourRange(p.hour)}</td>
               <td className="py-1.5 text-right text-gray-900 tabular-nums">
-                {formatOre(p.orePerKwh)}
+                {formatOre(p.orePerKwh, lang)}
               </td>
             </tr>
           ))}
@@ -423,11 +402,11 @@ function PriceTable({ prices }: { prices: HourlyPrice[] }) {
   );
 }
 
-// Samme stil som app/loading.tsx, formet som prisområder, nøkkeltall og graf.
-function Loading() {
+// Samme stil som PageSkeleton, formet som prisområder, nøkkeltall og graf.
+function Loading({ t }: { t: Copy }) {
   return (
     <div role="status" className="animate-pulse">
-      <span className="sr-only">Henter strømpriser …</span>
+      <span className="sr-only">{t.loading}</span>
       <div className="mt-8 flex flex-wrap gap-2">
         {Object.keys(zones).map((zone) => (
           <div key={zone} className="h-9 w-24 rounded-full bg-gray-200" />

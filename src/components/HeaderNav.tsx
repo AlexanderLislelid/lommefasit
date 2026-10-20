@@ -6,8 +6,21 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { calculatorColors } from "@/lib/calculatorColors";
 import type { Calculator } from "@/lib/calculators";
+import type { Lang } from "@/lib/i18n";
 
-export default function HeaderNav({ links }: { links: Calculator[] }) {
+const copy = {
+  nb: { calculators: "Kalkulatorer", open: "Åpne meny", close: "Lukk meny" },
+  en: { calculators: "Calculators", open: "Open menu", close: "Close menu" },
+};
+
+export default function HeaderNav({
+  lang,
+  links,
+}: {
+  lang: Lang;
+  links: Calculator[];
+}) {
+  const t = copy[lang];
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -27,13 +40,13 @@ export default function HeaderNav({ links }: { links: Calculator[] }) {
 
   return (
     <>
-      <nav aria-label="Kalkulatorer" className="hidden gap-1 lg:flex">
+      <nav aria-label={t.calculators} className="hidden gap-1 lg:flex">
         {links.map((calc) => {
-          const active = pathname === `/${calc.slug}`;
+          const active = pathname === calc.href;
           return (
             <Link
               key={calc.slug}
-              href={`/${calc.slug}`}
+              href={calc.href}
               aria-current={active ? "page" : undefined}
               className={`rounded-full px-3 py-1.5 text-sm font-medium whitespace-nowrap transition ${
                 active
@@ -59,7 +72,7 @@ export default function HeaderNav({ links }: { links: Calculator[] }) {
         ) : (
           <Menu aria-hidden className="size-5" />
         )}
-        <span className="sr-only">{open ? "Lukk meny" : "Åpne meny"}</span>
+        <span className="sr-only">{open ? t.close : t.open}</span>
       </button>
 
       {open && (
@@ -73,20 +86,20 @@ export default function HeaderNav({ links }: { links: Calculator[] }) {
           <div className="absolute inset-x-0 top-full px-4 pt-3 lg:hidden">
             <nav
               id="mobile-menu"
-              aria-label="Kalkulatorer"
+              aria-label={t.calculators}
               className="mx-auto max-w-5xl rounded-2xl border border-gray-200 bg-white p-2 shadow-xl transition duration-200 starting:-translate-y-2 starting:opacity-0"
             >
               <p className="px-3 pt-2 pb-1 text-xs font-medium tracking-wide text-gray-500 uppercase">
-                Kalkulatorer
+                {t.calculators}
               </p>
               <ul className="grid gap-1 sm:grid-cols-2">
                 {links.map((calc) => {
-                  const active = pathname === `/${calc.slug}`;
+                  const active = pathname === calc.href;
                   const color = calculatorColors[calc.color];
                   return (
                     <li key={calc.slug}>
                       <Link
-                        href={`/${calc.slug}`}
+                        href={calc.href}
                         aria-current={active ? "page" : undefined}
                         onClick={() => setOpen(false)}
                         className={`group flex items-center gap-3 rounded-xl p-3 transition focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:outline-none ${

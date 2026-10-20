@@ -2,7 +2,13 @@ import JsonLd from "@/components/JsonLd";
 
 export type FaqItem = { question: string; answer: string };
 
-export default function Faq({ items }: { items: FaqItem[] }) {
+export default function Faq({
+  items,
+  title = "Vanlige spørsmål",
+}: {
+  items: FaqItem[];
+  title?: string;
+}) {
   return (
     <section className="mt-16">
       <JsonLd
@@ -17,7 +23,7 @@ export default function Faq({ items }: { items: FaqItem[] }) {
         }}
       />
       <h2 className="font-display text-2xl font-semibold tracking-tight text-gray-900">
-        Vanlige spørsmål
+        {title}
       </h2>
       <div className="mt-6 grid gap-3">
         {items.map((item) => (

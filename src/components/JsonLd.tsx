@@ -16,10 +16,12 @@ export function CalculatorJsonLd({
   name,
   description,
   path,
+  lang = "nb",
 }: {
   name: string;
   description: string;
   path: string;
+  lang?: "nb" | "en";
 }) {
   return (
     <JsonLd
@@ -29,9 +31,9 @@ export function CalculatorJsonLd({
         name,
         description,
         url: `${siteUrl}${path}`,
-        inLanguage: "nb-NO",
+        inLanguage: lang === "en" ? "en" : "nb-NO",
         applicationCategory: "FinanceApplication",
-        operatingSystem: "Alle",
+        operatingSystem: lang === "en" ? "All" : "Alle",
         offers: { "@type": "Offer", price: "0", priceCurrency: "NOK" },
         isPartOf: { "@type": "WebSite", name: siteName, url: siteUrl },
       }}

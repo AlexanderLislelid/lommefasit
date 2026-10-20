@@ -2,13 +2,20 @@ import { RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { calculatorColors } from "@/lib/calculatorColors";
 import type { Calculator } from "@/lib/calculators";
+import type { Lang } from "@/lib/i18n";
 
-export default function CalculatorCard({ calc }: { calc: Calculator }) {
+export default function CalculatorCard({
+  calc,
+  lang,
+}: {
+  calc: Calculator;
+  lang: Lang;
+}) {
   const color = calculatorColors[calc.color];
 
   return (
     <Link
-      href={`/${calc.slug}`}
+      href={calc.href}
       className={`group flex flex-col rounded-2xl border border-gray-200 bg-linear-to-br p-6 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none ${color.border} ${color.bg}`}
     >
       <div className="mb-5 flex items-start justify-between">
@@ -21,7 +28,7 @@ export default function CalculatorCard({ calc }: { calc: Calculator }) {
         {calc.status === "daily" && (
           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
             <RefreshCw aria-hidden className="size-3" />
-            Daglig
+            {lang === "en" ? "Daily" : "Daglig"}
           </span>
         )}
       </div>
@@ -34,7 +41,7 @@ export default function CalculatorCard({ calc }: { calc: Calculator }) {
       <span
         className={`mt-auto inline-flex items-center gap-1 pt-5 text-sm font-semibold ${color.accent}`}
       >
-        {calc.cta ?? "Regn ut"}
+        {calc.cta}
         <span
           aria-hidden
           className="transition-transform duration-200 group-hover:translate-x-1"
