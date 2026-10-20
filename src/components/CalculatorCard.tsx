@@ -1,3 +1,4 @@
+import { RefreshCw } from "lucide-react";
 import Link from "next/link";
 import type { Calculator } from "@/lib/calculators";
 
@@ -51,10 +52,10 @@ export default function CalculatorCard({ calc }: { calc: Calculator }) {
         >
           {calc.icon}
         </span>
-        {calc.status === "live" && (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
-            <span className="size-1.5 animate-pulse rounded-full bg-emerald-500" />
-            Live
+        {calc.status === "daily" && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
+            <RefreshCw aria-hidden className="size-3" />
+            Daglig
           </span>
         )}
       </div>

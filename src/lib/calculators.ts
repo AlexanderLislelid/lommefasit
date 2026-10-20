@@ -4,7 +4,7 @@ export type Calculator = {
   description: string;
   icon: string;
   color: "green" | "blue" | "orange" | "purple" | "teal";
-  status: "live" | "ready" | "soon";
+  status: "daily" | "ready" | "soon";
   cta?: string;
 };
 
@@ -28,10 +28,10 @@ export const calculators: Calculator[] = [
   {
     slug: "strompris",
     title: "Strømpris nå",
-    description: "Timepris i ditt prisområde i dag og i morgen.",
+    description: "Timepris i ditt prisområde i dag.",
     icon: "kWh",
     color: "purple",
-    status: "live",
+    status: "daily",
     cta: "Se prisene",
   },
   {

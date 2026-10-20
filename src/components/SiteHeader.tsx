@@ -1,0 +1,31 @@
+import Link from "next/link";
+import HeaderNav from "@/components/HeaderNav";
+import { calculators } from "@/lib/calculators";
+
+export default function SiteHeader() {
+  return (
+    <header className="sticky top-0 z-20 border-b border-gray-200 bg-white/85 backdrop-blur">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <Logo />
+        <HeaderNav links={calculators.filter((c) => c.status !== "soon")} />
+      </div>
+    </header>
+  );
+}
+
+export function Logo() {
+  return (
+    <Link
+      href="/"
+      className="font-display inline-flex items-center gap-2 self-start text-lg font-semibold tracking-tight text-gray-900 sm:self-auto"
+    >
+      <span
+        aria-hidden
+        className="inline-flex size-8 items-center justify-center rounded-lg bg-linear-to-br from-emerald-400 to-teal-600 text-sm font-bold text-white shadow-sm"
+      >
+        L
+      </span>
+      Lommefasit
+    </Link>
+  );
+}

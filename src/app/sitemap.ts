@@ -14,7 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       .map((calc) => ({
         url: `${siteUrl}/${calc.slug}`,
         changeFrequency:
-          calc.status === "live" ? ("daily" as const) : ("monthly" as const),
+          calc.status === "daily" ? ("daily" as const) : ("monthly" as const),
         priority: 0.8,
       })),
   ];
