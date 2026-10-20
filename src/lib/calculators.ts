@@ -10,9 +10,9 @@ export type Calculator = {
 
 export const calculators: Calculator[] = [
   {
-    slug: "feriepengar",
-    title: "Feriepengar",
-    description: "Sjå kor mykje du får utbetalt i juni, med 10,2 % eller 12 %.",
+    slug: "feriepenger",
+    title: "Feriepenger",
+    description: "Se hvor mye du får utbetalt i juni, med 10,2 % eller 12 %.",
     icon: "kr",
     color: "green",
     status: "ready",
@@ -20,23 +20,23 @@ export const calculators: Calculator[] = [
   {
     slug: "prosent",
     title: "Prosent",
-    description: "Kor mange prosent er X av Y? Rabatt, auke og nedgang.",
+    description: "Hvor mange prosent er X av Y? Rabatt, økning og nedgang.",
     icon: "%",
     color: "blue",
     status: "ready",
   },
   {
-    slug: "straumpris",
-    title: "Straumpris no",
-    description: "Timepris i di prisområde i dag og i morgon.",
+    slug: "strompris",
+    title: "Strømpris nå",
+    description: "Timepris i ditt prisområde i dag og i morgen.",
     icon: "kWh",
     color: "purple",
     status: "live",
-    cta: "Sjå prisane",
+    cta: "Se prisene",
   },
   {
-    slug: "km-godtgjersle",
-    title: "Kilometergodtgjersle",
+    slug: "kilometergodtgjorelse",
+    title: "Kilometergodtgjørelse",
     description: "",
     icon: "",
     color: "green",

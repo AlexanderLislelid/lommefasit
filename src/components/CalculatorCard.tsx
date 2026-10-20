@@ -29,7 +29,7 @@ export default function CalculatorCard({ calc }: { calc: Calculator }) {
       </h3>
       <p className="mt-2 text-sm text-gray-600">{calc.description}</p>
       <span className="mt-4 inline-block font-semibold text-emerald-700 group-hover:underline">
-        {calc.cta ?? "Rekn ut"} →
+        {calc.cta ?? "Regn ut"} →
       </span>
     </Link>
   );
