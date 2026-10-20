@@ -5,7 +5,7 @@ import { calculators } from "@/lib/calculators";
 export default function SiteHeader() {
   return (
     <header className="sticky top-0 z-20 border-b border-gray-200 bg-white/85 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-3">
         <Logo />
         <HeaderNav links={calculators.filter((c) => c.status !== "soon")} />
       </div>
@@ -17,7 +17,7 @@ export function Logo() {
   return (
     <Link
       href="/"
-      className="font-display inline-flex items-center gap-2 self-start text-lg font-semibold tracking-tight text-gray-900 sm:self-auto"
+      className="font-display inline-flex items-center gap-2 text-lg font-semibold tracking-tight text-gray-900 sm:self-auto"
     >
       <span
         aria-hidden
