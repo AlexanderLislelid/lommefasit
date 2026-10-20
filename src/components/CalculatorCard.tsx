@@ -1,45 +1,10 @@
 import { RefreshCw } from "lucide-react";
 import Link from "next/link";
+import { calculatorColors } from "@/lib/calculatorColors";
 import type { Calculator } from "@/lib/calculators";
 
-const colors: Record<
-  Calculator["color"],
-  { icon: string; accent: string; border: string; bg: string }
-> = {
-  green: {
-    icon: "bg-white text-emerald-700 ring-emerald-100",
-    accent: "text-emerald-700",
-    border: "hover:border-emerald-200",
-    bg: "from-emerald-50 via-white to-white",
-  },
-  blue: {
-    icon: "bg-white text-blue-700 ring-blue-100",
-    accent: "text-blue-700",
-    border: "hover:border-blue-200",
-    bg: "from-blue-50 via-white to-white",
-  },
-  orange: {
-    icon: "bg-white text-orange-700 ring-orange-100",
-    accent: "text-orange-700",
-    border: "hover:border-orange-200",
-    bg: "from-orange-50 via-white to-white",
-  },
-  purple: {
-    icon: "bg-white text-purple-700 ring-purple-100",
-    accent: "text-purple-700",
-    border: "hover:border-purple-200",
-    bg: "from-purple-50 via-white to-white",
-  },
-  teal: {
-    icon: "bg-white text-teal-700 ring-teal-100",
-    accent: "text-teal-700",
-    border: "hover:border-teal-200",
-    bg: "from-teal-50 via-white to-white",
-  },
-};
-
 export default function CalculatorCard({ calc }: { calc: Calculator }) {
-  const color = colors[calc.color];
+  const color = calculatorColors[calc.color];
 
   return (
     <Link

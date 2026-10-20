@@ -3,7 +3,7 @@ export type Calculator = {
   title: string;
   description: string;
   icon: string;
-  color: "green" | "blue" | "orange" | "purple" | "teal";
+  color: "green" | "blue" | "orange" | "purple" | "teal" | "rose";
   status: "daily" | "ready" | "soon";
   cta?: string;
 };
@@ -45,9 +45,10 @@ export const calculators: Calculator[] = [
   {
     slug: "kilometergodtgjorelse",
     title: "Kilometergodtgjørelse",
-    description: "",
-    icon: "",
-    color: "green",
-    status: "soon",
+    description:
+      "Hva får du for å kjøre egen bil i jobben, og hva er skattefritt?",
+    icon: "km",
+    color: "rose",
+    status: "ready",
   },
 ];

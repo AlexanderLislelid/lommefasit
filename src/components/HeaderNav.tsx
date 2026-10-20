@@ -1,9 +1,10 @@
 "use client";
 
-import { Menu, X } from "lucide-react";
+import { ChevronRight, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { calculatorColors } from "@/lib/calculatorColors";
 import type { Calculator } from "@/lib/calculators";
 
 export default function HeaderNav({ links }: { links: Calculator[] }) {
@@ -16,12 +17,17 @@ export default function HeaderNav({ links }: { links: Calculator[] }) {
       if (e.key === "Escape") setOpen(false);
     };
     document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    // Hindrer at siden bak scroller mens menyen er åpen.
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = "";
+    };
   }, [open]);
 
   return (
     <>
-      <nav aria-label="Kalkulatorer" className="hidden gap-1 sm:flex">
+      <nav aria-label="Kalkulatorer" className="hidden gap-1 lg:flex">
         {links.map((calc) => {
           const active = pathname === `/${calc.slug}`;
           return (
@@ -46,7 +52,7 @@ export default function HeaderNav({ links }: { links: Calculator[] }) {
         aria-expanded={open}
         aria-controls="mobile-menu"
         onClick={() => setOpen(!open)}
-        className="inline-flex size-10 items-center justify-center rounded-xl text-gray-700 ring-1 ring-gray-200 transition ring-inset hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none sm:hidden"
+        className="inline-flex size-10 items-center justify-center rounded-xl text-gray-700 ring-1 ring-gray-200 transition ring-inset hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none lg:hidden"
       >
         {open ? (
           <X aria-hidden className="size-5" />
@@ -62,43 +68,59 @@ export default function HeaderNav({ links }: { links: Calculator[] }) {
           <div
             aria-hidden
             onClick={() => setOpen(false)}
-            className="absolute inset-x-0 top-full h-screen bg-gray-900/20 sm:hidden"
+            className="absolute inset-x-0 top-full h-screen bg-gray-900/30 backdrop-blur-sm transition-opacity duration-200 lg:hidden starting:opacity-0"
           />
-          <nav
-            id="mobile-menu"
-            aria-label="Kalkulatorer"
-            className="absolute inset-x-0 top-full border-b border-gray-200 bg-white px-4 pt-2 pb-4 shadow-lg sm:hidden"
-          >
-            <ul className="flex flex-col gap-1">
-              {links.map((calc) => {
-                const active = pathname === `/${calc.slug}`;
-                return (
-                  <li key={calc.slug}>
-                    <Link
-                      href={`/${calc.slug}`}
-                      aria-current={active ? "page" : undefined}
-                      onClick={() => setOpen(false)}
-                      className={`flex items-center gap-3 rounded-xl p-3 transition ${
-                        active ? "bg-gray-100" : "hover:bg-gray-50"
-                      }`}
-                    >
-                      <span className="font-display inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-white text-sm font-bold text-emerald-700 shadow-sm ring-1 ring-gray-200 ring-inset">
-                        {calc.icon}
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block font-medium text-gray-900">
-                          {calc.title}
+          <div className="absolute inset-x-0 top-full px-4 pt-3 lg:hidden">
+            <nav
+              id="mobile-menu"
+              aria-label="Kalkulatorer"
+              className="mx-auto max-w-5xl rounded-2xl border border-gray-200 bg-white p-2 shadow-xl transition duration-200 starting:-translate-y-2 starting:opacity-0"
+            >
+              <p className="px-3 pt-2 pb-1 text-xs font-medium tracking-wide text-gray-500 uppercase">
+                Kalkulatorer
+              </p>
+              <ul className="grid gap-1 sm:grid-cols-2">
+                {links.map((calc) => {
+                  const active = pathname === `/${calc.slug}`;
+                  const color = calculatorColors[calc.color];
+                  return (
+                    <li key={calc.slug}>
+                      <Link
+                        href={`/${calc.slug}`}
+                        aria-current={active ? "page" : undefined}
+                        onClick={() => setOpen(false)}
+                        className={`group flex items-center gap-3 rounded-xl p-3 transition focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:outline-none ${
+                          active ? color.soft : "hover:bg-gray-50"
+                        }`}
+                      >
+                        <span
+                          className={`font-display inline-flex size-11 shrink-0 items-center justify-center rounded-xl bg-linear-to-br text-sm font-bold shadow-sm ring-1 ring-inset ${color.icon} ${color.bg}`}
+                        >
+                          {calc.icon}
                         </span>
-                        <span className="block truncate text-sm text-gray-600">
-                          {calc.description}
+                        <span className="min-w-0 flex-1">
+                          <span className="block font-medium text-gray-900">
+                            {calc.title}
+                          </span>
+                          <span className="line-clamp-1 text-sm text-gray-600">
+                            {calc.description}
+                          </span>
                         </span>
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
+                        <ChevronRight
+                          aria-hidden
+                          className={`size-4 shrink-0 transition group-hover:translate-x-0.5 ${
+                            active
+                              ? color.accent
+                              : "text-gray-300 group-hover:text-gray-500"
+                          }`}
+                        />
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+          </div>
         </>
       )}
     </>
