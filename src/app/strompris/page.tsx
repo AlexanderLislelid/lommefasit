@@ -74,7 +74,7 @@ async function Prices({ searchParams }: Props) {
 
   return (
     <>
-      <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mt-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <ZonePicker selected={zone} withSupport={withSupport} />
         <ViewToggle zone={zone} withSupport={withSupport} />
       </div>
@@ -108,14 +108,15 @@ function ViewToggle({
   zone: Zone;
   withSupport: boolean;
 }) {
-  const button = "rounded-full px-4 py-1.5 text-sm font-medium transition";
+  const button =
+    "rounded-full px-4 py-1.5 text-sm font-medium whitespace-nowrap transition";
   const active = "bg-white text-gray-900 shadow-sm";
   const inactive = "text-gray-700 hover:text-gray-900";
 
   return (
     <nav
       aria-label="Visning"
-      className="inline-flex self-start rounded-full bg-gray-200 p-1 ring-1 ring-gray-300 ring-inset"
+      className="inline-flex shrink-0 self-start rounded-full bg-gray-200 p-1 ring-1 ring-gray-300 ring-inset"
     >
       <Link
         href={`?sone=${zone}`}
