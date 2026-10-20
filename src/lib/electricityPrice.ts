@@ -11,7 +11,8 @@ export const zones = {
 export type Zone = keyof typeof zones;
 
 export function isZone(value: unknown): value is Zone {
-  return typeof value === "string" && value in zones;
+  // hasOwn, ikke `in`, så arvede nøkler som "constructor" ikke godtas.
+  return typeof value === "string" && Object.hasOwn(zones, value);
 }
 
 type ApiPrice = { NOK_per_kWh: number; time_start: string; time_end: string };
