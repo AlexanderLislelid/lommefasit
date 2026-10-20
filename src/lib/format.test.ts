@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatNok } from "./format";
+import { formatNok, formatNumber } from "./format";
 
 // Intl bruker hardt mellomrom (U+00A0), så "kr" ikke brytes til ny linje
 const nbsp = " ";
@@ -11,5 +11,15 @@ describe("formatNok", () => {
 
   it("runder av til hele kroner", () => {
     expect(formatNok(99.6)).toBe(`100${nbsp}kr`);
+  });
+});
+
+describe("formatNumber", () => {
+  it("bruker komma og maks to desimaler", () => {
+    expect(formatNumber(12.3456)).toBe("12,35");
+  });
+
+  it("dropper desimaler for heltall", () => {
+    expect(formatNumber(1500)).toBe(`1${nbsp}500`);
   });
 });

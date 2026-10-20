@@ -17,6 +17,14 @@ export function formatDecimal(amount: number): string {
   return ore.format(amount);
 }
 
+const number = new Intl.NumberFormat("nb-NO", {
+  maximumFractionDigits: 2,
+});
+
+export function formatNumber(amount: number): string {
+  return number.format(amount);
+}
+
 export function formatOre(amount: number): string {
   return `${formatDecimal(amount)} øre`;
 }
