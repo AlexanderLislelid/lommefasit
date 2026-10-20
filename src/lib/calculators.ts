@@ -35,6 +35,14 @@ export const calculators: Calculator[] = [
     cta: "Se prisene",
   },
   {
+    slug: "overtid",
+    title: "Overtid",
+    description: "Hva får du for overtidstimer med 50% eller 100% tillegg?",
+    icon: "Ot",
+    color: "orange",
+    status: "ready",
+  },
+  {
     slug: "kilometergodtgjorelse",
     title: "Kilometergodtgjørelse",
     description: "",
